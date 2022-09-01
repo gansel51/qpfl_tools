@@ -30,7 +30,7 @@ class ScheduleGenerator:
         self.schedule = {}
         self.all_matchups = []
 
-    def gen_weekly_schedule(self, week: int) -> bool:
+    def generate_weekly_schedule(self, week: int) -> bool:
         """
         Method to generate the schedule for a single week
 
@@ -95,7 +95,7 @@ class ScheduleGenerator:
 
     def _format_output(self) -> dict:
         """
-        Generates a string version of each week's schedule for human readability
+        Helper method to generate a string version of each week's schedule for human readability
 
         Returns:
             dict: Dictionary of schedule keyed by week with values being a string of the week's matchups
@@ -133,7 +133,7 @@ class ScheduleGenerator:
         current_week = 1
         # generate schedule iterating by week
         while current_week < 16:
-            indictator = self.gen_weekly_schedule(current_week)
+            indictator = self.generate_weekly_schedule(current_week)
             # only incremement the week if the schedule was accepted to ensure each week gets a schedule
             current_week += 1 if indictator else current_week
         # write the schedule to a txt file
