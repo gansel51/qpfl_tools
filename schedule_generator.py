@@ -40,7 +40,7 @@ class ScheduleGenerator:
         Returns:
             week_schedule_accepted (bool): An indicator variable to show if an acceptable schedule was generated
         """
-        matchups = []
+        week_matchups = []
         available_teams = self.teams.copy()
         for team in self.teams:
             matchup_works = False
@@ -64,13 +64,13 @@ class ScheduleGenerator:
             # adds matchup (if accepted) to week matchups and all matchups
             # removes teams in a matchup from available list
             if week_schedule_accepted:
-                matchups.append((team, opponent))
+                self.all_matchups.append(matchup)
+                week_matchups.append((team, opponent))
                 available_teams.remove(team)
                 available_teams.remove(opponent)
-                self.all_matchups.append(matchup)
         # adds full week schedule to year schedule dictionary
         if week_schedule_accepted:
-            self.schedule[f"Week {str(week)}"] = matchups
+            self.schedule[f"Week {str(week)}"] = week_matchups
         return week_schedule_accepted
 
     def _validate_matchup(self, matchup: tuple, week: int) -> bool:
@@ -87,9 +87,11 @@ class ScheduleGenerator:
         """
         # set number of times a team should play another - 1 until week 10 to ensure each team plays each other team
         self.max_games_against_opponent = 1 if week < 10 else 2
+        matchup_total = 0
         # ensure teams don't play themselves and don't play more than max_games_against_opponent
         if matchup[0] != matchup[1]:
-            return True if self.all_matchups.count(matchup) < self.max_games_against_opponent else False
+            matchup_total = self.all_matchups.count(matchup) + self.all_matchups.count(reversed(matchup))
+            return True if matchup_total < self.max_games_against_opponent else False
         else:
             return False
 
@@ -121,10 +123,18 @@ class ScheduleGenerator:
         try:
             with open("schedule.txt", "w") as f:
                 for key, value in schedule.items():
-                    f.write("%s:%s\n" % (key, value))
+                    f.write("%s:%s\n\n" % (key, value))
             return True
         except Exception:
             return False
+
+    def _validate_output(self):
+        for matchup in self.all_matchups:
+            if matchup[0] == matchup[1]:
+                return False
+            else:
+                matchup_count = self.all_matchups.count(matchup) + self.all_matchups.count(reversed(matchup))
+                print(f"The count for matchup {matchup} is: {matchup_count}")
 
     def controller(self):
         """
@@ -137,6 +147,7 @@ class ScheduleGenerator:
             # only incremement the week if the schedule was accepted to ensure each week gets a schedule
             current_week += 1 if indictator else current_week
         # write the schedule to a txt file
+        self._validate_output()
         self._output_schedule()
 
 
