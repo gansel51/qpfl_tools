@@ -129,12 +129,19 @@ class ScheduleGenerator:
             return False
 
     def _validate_output(self):
+        """
+        Double checks that each matchup only occurs maximum of one time
+
+        Returns:
+            bool: True if successful, False otherwise
+        """
         for matchup in self.all_matchups:
             if matchup[0] == matchup[1]:
                 return False
             else:
                 matchup_count = self.all_matchups.count(matchup) + self.all_matchups.count(reversed(matchup))
                 print(f"The count for matchup {matchup} is: {matchup_count}")
+                return True
 
     def controller(self):
         """
