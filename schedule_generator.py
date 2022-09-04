@@ -22,11 +22,45 @@ class ScheduleGenerator:
             "Connor",
             "Stephen",
             "Tim/Spencer",
-            "Bocki",
-            "Joe",
+            "Joe Kuhl",
+            "Joe Ward",
             "Bill",
             "Arnav",
         ]
+        self.team_schedule = {
+            "Griffin": [],
+            "Ryan": [],
+            "Kaminska": [],
+            "Connor": [],
+            "Stephen": [],
+            "Tim/Spencer": [],
+            "Joe Kuhl": [],
+            "Joe Ward": [],
+            "Bill": [],
+            "Arnav": [],
+        }
+        self.rivals = {
+            "Griffin": "Ryan",
+            "Ryan": "Griffin",
+            "Connor": "Kaminska",
+            "Kaminska": "Connor",
+            "Bill": "Joe Kuhl",
+            "Joe Kuhl": "Bill",
+            "Arnav": "Stephen",
+            "Stephen": "Arnav",
+            "Tim/Spencer": "Joe Ward",
+            "Joe Ward": "Tim/Spencer",
+        }
+        self.win_percentage_opponent = {
+            "Griffin": None,
+            "Ryan": None,
+            "Kaminska": None,
+            "Connor": None,
+            "Joe Kuhl": None,
+            "Joe Ward": None,
+            "Bill": None,
+            "Arnav": None,
+        }
         self.schedule = {}
         self.all_matchups = []
 
@@ -42,6 +76,9 @@ class ScheduleGenerator:
         """
         week_matchups = []
         available_teams = self.teams.copy()
+        if week == 5:
+            rivalry_week = self._rivalry_week(week)
+            return rivalry_week
         for team in self.teams:
             matchup_works = False
             infinite_loop_check = 0
@@ -58,7 +95,7 @@ class ScheduleGenerator:
                 matchup_works = self._validate_matchup(matchup, week)
                 # if only two teams are left, this while can get stuck trying to create a matchup
                 # this loop prevents that by breaking the while
-                if infinite_loop_check > 30:
+                if infinite_loop_check > 100000:
                     week_schedule_accepted = False
                     break
             # adds matchup (if accepted) to week matchups and all matchups
@@ -90,10 +127,32 @@ class ScheduleGenerator:
         matchup_total = 0
         # ensure teams don't play themselves and don't play more than max_games_against_opponent
         if matchup[0] != matchup[1]:
+            if week < 5:
+                for rival in self.rivals:
+                    rival_match = (rival, self.rivals[rival])
+                    if matchup == (rival_match or reversed(rival_match)):
+                        return False
             matchup_total = self.all_matchups.count(matchup) + self.all_matchups.count(reversed(matchup))
             return True if matchup_total < self.max_games_against_opponent else False
         else:
             return False
+
+    def _rivalry_week(self, week: int):
+        week_matchups = []
+        rivals = {
+            "Griffin": "Ryan",
+            "Connor": "Kaminska",
+            "Bill": "Joe Kuhl",
+            "Arnav": "Stephen",
+            "Tim/Spencer": "Joe Ward",
+        }
+        for key in rivals:
+            matchup = (key, rivals[key])
+            week_matchups.append(matchup)
+        for matchup in list(set(week_matchups)):
+            self.all_matchups.append(matchup)
+        self.schedule[f"Rivalry Week {str(week)}"] = week_matchups
+        return True
 
     def _format_output(self) -> dict:
         """
@@ -124,9 +183,51 @@ class ScheduleGenerator:
             with open("schedule.txt", "w") as f:
                 for key, value in schedule.items():
                     f.write("%s:%s\n\n" % (key, value))
+                f.write()
             return True
         except Exception:
             return False
+
+    def _calculate_strength_of_schedule(self):
+        team_win_percentages = {
+            "Griffin": 0.6429,
+            "Ryan": 0.5714,
+            "Kaminska": 0.4286,
+            "Connor": 0.6429,
+            "Joe Kuhl": 0.4286,
+            "Joe Ward": 0.2857,
+            "Bill": 0.4286,
+            "Arnav": 0.5,
+        }
+        for matchup in self.all_matchups:
+            self.team_schedule[matchup[0]].append(matchup[1])
+            self.team_schedule[matchup[1]].append(matchup[0])
+        for team in self.team_schedule:
+            total_win_percentage = 0
+            opponent_count = 0
+            for opponent in self.team_schedule[team]:
+                if opponent not in ["Tim/Spencer", "Stephen"]:
+                    opponent_count += 1
+                    total_win_percentage += team_win_percentages[opponent]
+            team_adj_win_perc = total_win_percentage / opponent_count
+            self.win_percentage_opponent[team] = team_adj_win_perc
+            output_strength_of_schedule = {}
+        for team in self.win_percentage_opponent:
+            hardest_schedule = {
+                key: rank
+                for rank, key in enumerate(
+                    sorted(self.win_percentage_opponent, key=self.win_percentage_opponent.get, reverse=True),
+                    1,
+                )
+            }
+            for team in hardest_schedule:
+                output_strength_of_schedule[
+                    team
+                ] = f"{team} has the schedule rank: {hardest_schedule[team]} hardest with an opponent winning percentage of {round(self.win_percentage_opponent[team], 3)}"
+        with open("strength_of_schedule.txt", "w") as f:
+            for team in hardest_schedule:
+                f.write("%s\n" % (output_strength_of_schedule[team]))
+        return output_strength_of_schedule
 
     def _validate_output(self):
         """
@@ -135,13 +236,18 @@ class ScheduleGenerator:
         Returns:
             bool: True if successful, False otherwise
         """
+        matchups_list = []
         for matchup in self.all_matchups:
             if matchup[0] == matchup[1]:
                 return False
             else:
                 matchup_count = self.all_matchups.count(matchup) + self.all_matchups.count(reversed(matchup))
-                print(f"The count for matchup {matchup} is: {matchup_count}")
-                return True
+                matchups_list.append(f"{matchup} plays {matchup_count} times")
+        matchups_list = list(set(matchups_list))
+        with open("validate_schedule.txt", "w") as f:
+            for listed_matchup in sorted(matchups_list):
+                f.write("%s\n" % (listed_matchup))
+        return True
 
     def controller(self):
         """
@@ -150,12 +256,14 @@ class ScheduleGenerator:
         current_week = 1
         # generate schedule iterating by week
         while current_week < 16:
-            indictator = self.generate_weekly_schedule(current_week)
+            indicator = self.generate_weekly_schedule(current_week)
             # only incremement the week if the schedule was accepted to ensure each week gets a schedule
-            current_week += 1 if indictator else current_week
+            if indicator:
+                current_week += 1
         # write the schedule to a txt file
         self._validate_output()
         self._output_schedule()
+        self._calculate_strength_of_schedule()
 
 
 if __name__ == "__main__":
