@@ -183,7 +183,6 @@ class ScheduleGenerator:
             with open("schedule.txt", "w") as f:
                 for key, value in schedule.items():
                     f.write("%s:%s\n\n" % (key, value))
-                f.write()
             return True
         except Exception:
             return False
