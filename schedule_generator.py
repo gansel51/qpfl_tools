@@ -246,9 +246,17 @@ class ScheduleGenerator:
             }
             # create string output
             for team in hardest_schedule:
+                if hardest_schedule[team] == 1:
+                    string_ranking = ""
+                elif hardest_schedule[team] == 2:
+                    string_ranking = " 2nd"
+                elif hardest_schedule[team] == 3:
+                    string_ranking = " 3rd"
+                else:
+                    string_ranking = f" {hardest_schedule[team]}th"
                 output_strength_of_schedule[
                     team
-                ] = f"{team} has the schedule rank: {hardest_schedule[team]} hardest with an opponent winning percentage of {round(self.win_percentage_opponent[team], 3)}"
+                ] = f"{team} has the{string_ranking} hardest schedule with an opponent winning percentage of {round(self.win_percentage_opponent[team], 3)}"
         # output strings to file
         with open("strength_of_schedule.txt", "w") as f:
             for team in hardest_schedule:
