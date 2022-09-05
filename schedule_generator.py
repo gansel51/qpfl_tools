@@ -12,7 +12,8 @@ class ScheduleGenerator:
 
     def __init__(self):
         """
-        Initialization for the class, including maximum times playing a specific opponent, a list of teams, and the schedule.
+        Initialization for the class, including maximum times playing a specific opponent,
+        a list of teams, and the schedule.
         """
         self.max_games_against_opponent = 2
         self.teams = [
@@ -138,21 +139,34 @@ class ScheduleGenerator:
             return False
 
     def _rivalry_week(self, week: int):
-        week_matchups = []
-        rivals = {
-            "Griffin": "Ryan",
-            "Connor": "Kaminska",
-            "Bill": "Joe Kuhl",
-            "Arnav": "Stephen",
-            "Tim/Spencer": "Joe Ward",
-        }
-        for key in rivals:
-            matchup = (key, rivals[key])
-            week_matchups.append(matchup)
-        for matchup in list(set(week_matchups)):
-            self.all_matchups.append(matchup)
-        self.schedule[f"Rivalry Week {str(week)}"] = week_matchups
-        return True
+        """
+        Helper method to add rivalry week into the QPFL Season
+
+        Args:
+            week (int): Week of rivalry week
+
+        Returns:
+            bool: True if worked, False if Exception
+        """
+        try:
+            week_matchups = []
+            rivals = {
+                "Griffin": "Ryan",
+                "Connor": "Kaminska",
+                "Bill": "Joe Kuhl",
+                "Arnav": "Stephen",
+                "Tim/Spencer": "Joe Ward",
+            }
+            for key in rivals:
+                # create rival matchup
+                rival_matchup = (key, rivals[key])
+                week_matchups.append(rival_matchup)
+            for matchup in list(set(week_matchups)):
+                self.all_matchups.append(matchup)
+            self.schedule[f"Rivalry Week {str(week)}"] = week_matchups
+            return True
+        except Exception:
+            return False
 
     def _format_output(self) -> dict:
         """
@@ -188,6 +202,13 @@ class ScheduleGenerator:
             return False
 
     def _calculate_strength_of_schedule(self):
+        """
+        Helper method to calculate the strength of schedule for each team.
+
+        Returns:
+            dict: Output dictionary keyed by team with their strength of schedule in a string sentence
+        """
+        # 2021 regular season scores
         team_win_percentages = {
             "Griffin": 0.6429,
             "Ryan": 0.5714,
@@ -199,18 +220,22 @@ class ScheduleGenerator:
             "Arnav": 0.5,
         }
         for matchup in self.all_matchups:
+            # create team schedules
             self.team_schedule[matchup[0]].append(matchup[1])
             self.team_schedule[matchup[1]].append(matchup[0])
         for team in self.team_schedule:
             total_win_percentage = 0
             opponent_count = 0
             for opponent in self.team_schedule[team]:
+                # confirm every opponent has a winning percentage to use
                 if opponent not in ["Tim/Spencer", "Stephen"]:
                     opponent_count += 1
+                    # average opponent winning percentages
                     total_win_percentage += team_win_percentages[opponent]
             team_adj_win_perc = total_win_percentage / opponent_count
             self.win_percentage_opponent[team] = team_adj_win_perc
             output_strength_of_schedule = {}
+        # sort the strength of schedules
         for team in self.win_percentage_opponent:
             hardest_schedule = {
                 key: rank
@@ -219,10 +244,12 @@ class ScheduleGenerator:
                     1,
                 )
             }
+            # create string output
             for team in hardest_schedule:
                 output_strength_of_schedule[
                     team
                 ] = f"{team} has the schedule rank: {hardest_schedule[team]} hardest with an opponent winning percentage of {round(self.win_percentage_opponent[team], 3)}"
+        # output strings to file
         with open("strength_of_schedule.txt", "w") as f:
             for team in hardest_schedule:
                 f.write("%s\n" % (output_strength_of_schedule[team]))
