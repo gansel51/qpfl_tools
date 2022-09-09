@@ -22,8 +22,11 @@ class Scorer:
         """
         print("Scoring quarterback")
         points = 0
-        pyards = int(input("Passing Yards: "))
-        points += math.floor(pyards / 25)
+        pyards = input("Passing Yards: ")
+        if str.lower(rush_yards) == "scored":
+            points = int(input("Points: "))
+            return points
+        points += math.floor(int(pyards) / 25)
         rush_yards = int(input("Rushing Yards: "))
         points += math.floor(rush_yards / 10)
         points += 6 * int(input("Total TDs: "))
@@ -51,8 +54,11 @@ class Scorer:
         """
         print("Scoring running back")
         points = 0
-        rush_yards = int(input("Rushing Yards: "))
-        points += math.floor(rush_yards / 10)
+        rush_yards = input("Rushing Yards: ")
+        if str.lower(rush_yards) == "scored":
+            points = int(input("Points: "))
+            return points
+        points += math.floor(int(rush_yards) / 10)
         rec_yds = int(input("Receiving Yards: "))
         points += math.floor(rec_yds / 10)
         points += 6 * int(input("Total TDs: "))
@@ -67,8 +73,6 @@ class Scorer:
             points += math.floor(pyards / 25)
             two_pt = int(input("Total two point conversions: "))
             points += two_pt * 2
-            rec_yds = int(input("Receiving Yards: "))
-            points += math.floor(rec_yds / 10)
         elif go_further != "n":
             print(f"Input {go_further} not recognized (y/n accepted). Please try again")
             points = self._runningback()
@@ -88,15 +92,18 @@ class Scorer:
         """
         print(f"Scoring {str.upper(player_type)}")
         points = 0
-        rec_yds = int(input("Receiving Yards: "))
-        points += math.floor(rec_yds / 10)
+        rec_yds = input("Receiving Yards: ")
+        if str.lower(rec_yds) == "scored":
+            points = int(input("Points: "))
+            return points
+        points += math.floor(int(rec_yds) / 10)
         points += 6 * int(input("Total TDs: "))
         turnovers = 2 * int(input("Total turnovers: "))
         points -= turnovers
         if turnovers > 0:
             pick_fumble_six = int(input("Total turnovers returned for TDs: "))
             points -= 3 * pick_fumble_six
-        go_further = str.lower(input("Did your RB score another way? y/n: "))
+        go_further = str.lower(input(f"Did your {str.upper(player_type)} score another way? y/n: "))
         if go_further == "y":
             rush_yards = int(input("Rushing Yards: "))
             points = math.floor(rush_yards / 10)
@@ -120,7 +127,12 @@ class Scorer:
         """
         print("Scoring kicker")
         points = 0
-        points += int(input("PATs made: "))
+        first = input("PATs made: ")
+        if str.lower(first) == "scored":
+            points = int(input("Points: "))
+            return points
+        else:
+            points += int(first)
         points -= int(input("PATs attempted: "))
         points += int(input("FGs 1-29 yards: "))
         points += 2 * int(input("FGs 30-49 yards: "))
@@ -140,7 +152,12 @@ class Scorer:
         """
         print("Scoring defense")
         points = 0
-        points_allowed = int(input("Points Allowed: "))
+        points_allowed = input("Points Allowed: ")
+        if str.lower(points_allowed) == "scored":
+            points = int(input("Points: "))
+            return points
+        else:
+            points_allowed = int(points_allowed)
         if points_allowed == 0:
             points += 8
         elif points_allowed <= 9:
@@ -175,6 +192,9 @@ class Scorer:
         print("Scoring head coach")
         points = 0
         win = str.lower(input("Coach Win? y/n: "))
+        if str.lower(win) == "scored":
+            points = int(input("Points: "))
+            return points
         win_bool = True if win == "y" else False
         if win_bool:
             win_margin = int(input("Margin of Victory: "))
