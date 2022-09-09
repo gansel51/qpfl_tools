@@ -33,7 +33,7 @@ The schedule verifier confirms that teams only play an opponent a maximum of two
 
 #### Strength of Schedule Calculator
 
-The strength of schedule calculator outputs a strength of schedule by averaging opponent win percentages from the previous regular season. Teams that did well in prior seasons are likely to have easier strength of schedule than would a team that did poorly in the prior season as their substitute opponent for playing themself is not as strong.
+The strength of schedule calculator outputs a strength of schedule by averaging opponent win percentages from the previous regular season. Teams that did well in prior seasons are likely to have easier strength of schedule than would a team that did poorly in the prior season as their substitute opponent for playing themself is not as strong. Rivalry week does not affect strength of schedule in any way, as it comes in the period of the season where every team plays every other team.
 
 
 ### Offline Scorer
