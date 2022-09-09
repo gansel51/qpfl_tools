@@ -1,3 +1,6 @@
+[[TOC]]
+
+
 # QPFL Tools
 
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/gansel51/qpfl_tools)
@@ -10,3 +13,16 @@ This repository holds tools to facilitate the running of an offline fantasy foot
 ## Current Tools
 
 - Schedule Generator
+- Offline Scorer
+
+## Usage
+
+## How to Use
+
+1. Clone the repository to your local machine. This can be done with the command `https://github.com/gansel51/qpfl_tools.git`
+
+
+### Schedule Generator
+
+### Offline Scorer
+
