@@ -23,26 +23,26 @@ SCOPES = ["https://mail.google.com/"]
 
 class LineupGenerator:
     def __init__(self):
-        self.service = self._authenticate_gmail()
+        self.service = self._authenticate()
+        self.creds = None
 
-    def _authenticate_gmail(self):
-        creds = None
+    def _authenticate(self):
         # the file token.pickle stores the user's access and refresh tokens, and is
         # created automatically when the authorization flow completes for the first time
         if os.path.exists("credentials/token.pickle"):
             with open("credentials/token.pickle", "rb") as token:
-                creds = pickle.load(token)
+                self.creds = pickle.load(token)
         # if there are no (valid) credentials availablle, let the user log in.
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
+        if not self.creds or not self.creds.valid:
+            if self.creds and self.creds.expired and self.creds.refresh_token:
+                self.creds.refresh(Request())
             else:
                 flow = InstalledAppFlow.from_client_secrets_file("credentials/credentials.json", SCOPES)
-                creds = flow.run_local_server(port=0)
+                self.creds = flow.run_local_server(port=0)
             # save the credentials for the next run
             with open("credentials/token.pickle", "wb") as token:
-                pickle.dump(creds, token)
-        return build("gmail", "v1", credentials=creds)
+                pickle.dump(self.creds, token)
+        return build("gmail", "v1", credentials=self.creds)
 
     def search_messages(self, query: str) -> list:
         result = self.service.users().messages().list(userId="me", q=query).execute()
