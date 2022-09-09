@@ -1,7 +1,9 @@
 # Specific Files to Ignore
-schedule.txt
-validate_schedule.txt
-strength_of_schedule.txt
+generated_schedule
+
+# Credentials Files
+credentials
+generated_schedule
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

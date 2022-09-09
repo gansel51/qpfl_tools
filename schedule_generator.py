@@ -194,7 +194,7 @@ class ScheduleGenerator:
         """
         schedule = self._format_output()
         try:
-            with open("schedule.txt", "w") as f:
+            with open("generated_schedule/schedule.txt", "w") as f:
                 for key, value in schedule.items():
                     f.write("%s:%s\n\n" % (key, value))
             return True
@@ -258,7 +258,7 @@ class ScheduleGenerator:
                     team
                 ] = f"{team} has the{string_ranking} hardest schedule with an opponent winning percentage of {round(self.win_percentage_opponent[team], 3)}"
         # output strings to file
-        with open("strength_of_schedule.txt", "w") as f:
+        with open("generated_schedule/strength_of_schedule.txt", "w") as f:
             for team in hardest_schedule:
                 f.write("%s\n" % (output_strength_of_schedule[team]))
         return output_strength_of_schedule
@@ -278,7 +278,7 @@ class ScheduleGenerator:
                 matchup_count = self.all_matchups.count(matchup) + self.all_matchups.count(reversed(matchup))
                 matchups_list.append(f"{matchup} plays {matchup_count} times")
         matchups_list = list(set(matchups_list))
-        with open("validate_schedule.txt", "w") as f:
+        with open("generated_schedule/validate_schedule.txt", "w") as f:
             for listed_matchup in sorted(matchups_list):
                 f.write("%s\n" % (listed_matchup))
         return True
