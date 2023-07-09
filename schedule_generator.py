@@ -2,9 +2,9 @@
 QPFL Schedule Generator
 """
 
-import random
 import logging
 import os
+import random
 import shutil
 
 
