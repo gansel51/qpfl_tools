@@ -509,6 +509,8 @@ class ScheduleGenerator:
 if __name__ == "__main__":
     number_of_tries = 30
     count = 0
+    number_of_tries = 60
+    count = 1
     logger = logging.getLogger("controller_logs")
     while count < number_of_tries:
         logger.warning(f"Starting attempt number {count} of {number_of_tries}")
@@ -518,3 +520,7 @@ if __name__ == "__main__":
             break
         else:
             count += 1
+    if success:
+        logger.warning("Schedule generated successfully!")
+    else:
+        logger.warning(f"Schedule validation failed after {number_of_tries} attempts")
