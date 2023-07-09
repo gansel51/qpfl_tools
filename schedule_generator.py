@@ -3,6 +3,7 @@ QPFL Schedule Generator
 """
 
 import random
+import time
 
 
 class ScheduleGenerator:
@@ -20,7 +21,7 @@ class ScheduleGenerator:
             "Griffin",
             "Ryan",
             "Kaminska",
-            "Connor",
+            "Reardon",
             "Stephen",
             "Tim/Spencer",
             "Joe Kuhl",
@@ -32,7 +33,7 @@ class ScheduleGenerator:
             "Griffin": [],
             "Ryan": [],
             "Kaminska": [],
-            "Connor": [],
+            "Reardon": [],
             "Stephen": [],
             "Tim/Spencer": [],
             "Joe Kuhl": [],
@@ -43,8 +44,8 @@ class ScheduleGenerator:
         self.rivals = {
             "Griffin": "Ryan",
             "Ryan": "Griffin",
-            "Connor": "Kaminska",
-            "Kaminska": "Connor",
+            "Reardon": "Kaminska",
+            "Kaminska": "Reardon",
             "Bill": "Joe Kuhl",
             "Joe Kuhl": "Bill",
             "Arnav": "Stephen",
@@ -56,7 +57,7 @@ class ScheduleGenerator:
             "Griffin": None,
             "Ryan": None,
             "Kaminska": None,
-            "Connor": None,
+            "Reardon": None,
             "Joe Kuhl": None,
             "Joe Ward": None,
             "Bill": None,
@@ -77,9 +78,9 @@ class ScheduleGenerator:
         """
         week_matchups = []
         available_teams = self.teams.copy()
-        if week == 5:
-            rivalry_week = self._rivalry_week(week)
-            return rivalry_week
+        # if week == 5:
+        #     rivalry_week = self._rivalry_week(week)
+        #     return rivalry_week
         for team in self.teams:
             matchup_works = False
             infinite_loop_check = 0
@@ -87,8 +88,8 @@ class ScheduleGenerator:
             if team not in available_teams:
                 continue
             while not matchup_works:
-                # loop check and week schedule check
                 week_schedule_accepted = True
+                # loop check and week schedule check
                 infinite_loop_check += 1
                 # choose opponent and create/validate the matchup
                 opponent = random.choice(available_teams)
@@ -106,6 +107,7 @@ class ScheduleGenerator:
                 week_matchups.append((team, opponent))
                 available_teams.remove(team)
                 available_teams.remove(opponent)
+                week_schedule_accepted = True if len(available_teams) == 0 else False
         # adds full week schedule to year schedule dictionary
         if week_schedule_accepted:
             self.schedule[f"Week {str(week)}"] = week_matchups
@@ -124,17 +126,20 @@ class ScheduleGenerator:
             bool: Returns a boolean on if the matchup should be accepted, True if yes otherwise False
         """
         # set number of times a team should play another - 1 until week 10 to ensure each team plays each other team
-        self.max_games_against_opponent = 1 if week < 10 else 2
+        # self.max_games_against_opponent = 1 if week < 10 else 2
+        self.max_games_against_opponent = 2
         matchup_total = 0
+        reversed_matchup = (matchup[1], matchup[0])
         # ensure teams don't play themselves and don't play more than max_games_against_opponent
         if matchup[0] != matchup[1]:
             if week < 5:
                 for rival in self.rivals:
                     rival_match = (rival, self.rivals[rival])
-                    if matchup == (rival_match or reversed(rival_match)):
+                    if matchup == (rival_match or reversed_matchup):
                         return False
-            matchup_total = self.all_matchups.count(matchup) + self.all_matchups.count(reversed(matchup))
-            return True if matchup_total < self.max_games_against_opponent else False
+            matchup_total = self.all_matchups.count(matchup) + self.all_matchups.count(reversed_matchup)
+            matchup_worked = True if matchup_total < self.max_games_against_opponent else False
+            return matchup_worked
         else:
             return False
 
@@ -152,7 +157,7 @@ class ScheduleGenerator:
             week_matchups = []
             rivals = {
                 "Griffin": "Ryan",
-                "Connor": "Kaminska",
+                "Reardon": "Kaminska",
                 "Bill": "Joe Kuhl",
                 "Arnav": "Stephen",
                 "Tim/Spencer": "Joe Ward",
@@ -213,7 +218,7 @@ class ScheduleGenerator:
             "Griffin": 0.6429,
             "Ryan": 0.5714,
             "Kaminska": 0.4286,
-            "Connor": 0.6429,
+            "Reardon": 0.6429,
             "Joe Kuhl": 0.4286,
             "Joe Ward": 0.2857,
             "Bill": 0.4286,
@@ -283,21 +288,52 @@ class ScheduleGenerator:
                 f.write("%s\n" % (listed_matchup))
         return True
 
-    def controller(self):
+    def gen_schedule(self):
         """
         Controller method to run the class
         """
         current_week = 1
+        counter = 0
+        correct_schedule = False
         # generate schedule iterating by week
-        while current_week < 16:
+        while current_week < 17:
+            if counter < 10 and current_week == 16:
+                correct_schedule = True
+                break
+            correct_schedule = 0
+            counter += 1
+            print(f"Attempt {counter} for week {current_week}")
             indicator = self.generate_weekly_schedule(current_week)
             # only incremement the week if the schedule was accepted to ensure each week gets a schedule
             if indicator:
+                print(f"Week {current_week} generated!")
                 current_week += 1
+                counter = 0
+            if counter == 10:
+                correct_schedule = False
+                break
         # write the schedule to a txt file
+        if not correct_schedule:
+            self.schedule = {}
+            self.all_matchups = []
+        return correct_schedule
+
+    def controller(self):
+        start_time = time.time()
+        correct_schedule = False
+        count = 0
+        while not correct_schedule:
+            count += 1
+            print(f"Schedule Attempt {count}")
+            current_time = time.time()
+            execution_time = round((current_time - start_time) / 60, 2)
+            print(f"Total Execution Time: {execution_time} min")
+            correct_schedule = self.gen_schedule()
         self._validate_output()
         self._output_schedule()
         self._calculate_strength_of_schedule()
+        final_time = time.time() - start_time
+        print(f"Executed with time {final_time}")
 
 
 if __name__ == "__main__":
