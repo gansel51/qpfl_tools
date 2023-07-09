@@ -284,8 +284,7 @@ class ScheduleGenerator:
         """
         # set number of times a team should play another - 1 until week 10 to ensure each team plays each other team
         validated = False
-        # max_games_against_opponent = 1 if week < 10 else 2
-        max_games_against_opponent = 1 if week < 9 else 2
+        max_games_against_opponent = 1 if week < 10 else 2
 
         home = matchup[0]
         away = matchup[1]
