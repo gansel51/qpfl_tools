@@ -15,8 +15,7 @@ class ScheduleGenerator:
 
     def __init__(self):
         """
-        Initialization for the class, including maximum times playing a specific opponent,
-        a list of teams, and the schedule.
+        Initialization for the class, including a list of teams, rivals, and the schedule.
         """
         self.logger = logging.getLogger(name="schedule_logger")
         self.logger.info("ScheduleGenerator class initialized")
@@ -46,6 +45,7 @@ class ScheduleGenerator:
         }
         self.schedule = {}
         self.all_matchups = []
+        self.previous_week = []
         # counts matchup numbers
         self.griffin = {
             "Griffin": 0,
@@ -167,9 +167,17 @@ class ScheduleGenerator:
             "Bill": 0,
             "Arnav": 0,
         }
-        self.previous_week = []
 
     def _return_correct_team_dict(self, team):
+        """
+        Helper method to return the correct team's dictionary
+
+        Args:
+            team (string): the name of the team for which to return the dictionary
+
+        Returns:
+            dict: dictionary of the team's schedule counts
+        """
         self.logger.info("Accessing correct team dictionary...")
         if team == "Griffin":
             return self.griffin
@@ -193,6 +201,13 @@ class ScheduleGenerator:
             return self.arnav
 
     def _update_correct_team_dict(self, home, away):
+        """
+        Helper method to update the count of matchups against a specific opponent
+
+        Args:
+            home (str): first team in matchup
+            away (str): second team in matchup
+        """
         self.logger.info("Updating correct team dictionary...")
         if home == "Griffin":
             self.griffin[away] += 1
