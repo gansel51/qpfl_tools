@@ -285,7 +285,7 @@ class ScheduleGenerator:
         # set number of times a team should play another - 1 until week 10 to ensure each team plays each other team
         validated = False
         # max_games_against_opponent = 1 if week < 10 else 2
-        max_games_against_opponent = 1 if week < 7 else 2
+        max_games_against_opponent = 1 if week < 9 else 2
 
         home = matchup[0]
         away = matchup[1]
@@ -409,6 +409,9 @@ class ScheduleGenerator:
         with open("schedule.txt", "r") as file:
             lines = file.readlines()
 
+            week = 0  # Initialize the week number
+            matchups = []  # Initialize the matchups list
+
             for line in lines:
                 line = line.strip()
 
@@ -416,25 +419,34 @@ class ScheduleGenerator:
                     week = int(line.split(":")[0].split()[1])
                     matchups = line.split(":")[1].strip().split(",")
 
-                    for matchup in matchups:
-                        teams = matchup.split("versus")
-                        team1 = teams[0].strip()
-                        team2 = teams[1].strip()
+                elif line.startswith("Rivalry Week"):
+                    week = "Rivalry"  # Set a special string for Rivalry Week
+                    matchups = line.split(":")[1].strip().split(",")
 
-                        if team1 not in team_schedule:
-                            team_schedule[team1] = []
-                        if team2 not in team_schedule:
-                            team_schedule[team2] = []
+                for matchup in matchups:
+                    teams = matchup.split("versus")
+                    team1 = teams[0].strip()
+                    team2 = teams[1].strip()
 
-                        team_schedule[team1].append((week, team2))
-                        team_schedule[team2].append((week, team1))
+                    if team1 not in team_schedule:
+                        team_schedule[team1] = []
+                    if team2 not in team_schedule:
+                        team_schedule[team2] = []
+
+                    team_schedule[team1].append((week, team2))
+                    team_schedule[team2].append((week, team1))
+
+                matchups = []  # Clear the matchups list
 
         with open("team_schedules.txt", "w") as f:
             for team, schedule in team_schedule.items():
                 f.write(f"Schedule for {team}:\n")
                 for matchup in schedule:
                     week, opponent = matchup
-                    weekly_match = f"Week {week}: versus {opponent}"
+                    if week == "Rivalry":
+                        weekly_match = f"Rivalry Week: versus {opponent}"
+                    else:
+                        weekly_match = f"Week {week}: versus {opponent}"
                     f.write(f"{weekly_match}\n")
                 f.write("\n")  # Separate each team's schedule with a blank line
 
