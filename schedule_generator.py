@@ -44,7 +44,6 @@ class ScheduleGenerator:
             "Joe Ward": "Tim/Spencer",
         }
         self.schedule = {}
-        self.all_matchups = []
         self.previous_week = []
         # counts matchup numbers
         self.griffin = {
@@ -291,7 +290,6 @@ class ScheduleGenerator:
                 away = matchup[1]
                 self._update_correct_team_dict(home=home, away=away)
                 self._update_correct_team_dict(home=away, away=home)
-                self.all_matchups.append(matchup)
             self.logger.info("Setting previous week variable equal to this week.")
             self.previous_week = week_matchups
             return True
@@ -382,8 +380,7 @@ class ScheduleGenerator:
                 rival_matchup = (key, rivals[key])
                 week_matchups.append(rival_matchup)
             for matchup in list(set(week_matchups)):
-                # add matchups to the matchup list and update total number of matchups played
-                self.all_matchups.append(matchup)
+                # update total number of matchups played
                 self._update_correct_team_dict(home=matchup[0], away=matchup[1])
                 self._update_correct_team_dict(home=matchup[1], away=matchup[0])
             # add matchups to the schedule
@@ -443,23 +440,14 @@ class ScheduleGenerator:
         """
         self.logger.info("Validating output")
         try:
-            matchups_list = []
-            for matchup in self.all_matchups:
-                home = matchup[0]
-                away = matchup[1]
-                home_dict = self._return_correct_team_dict(team=home)
-                matchup_count_home = home_dict[away]
-                matchup_count = self.all_matchups.count(matchup) + self.all_matchups.count(matchup[::-1])
-                if not matchup_count == matchup_count_home:
-                    self.logger.warning(
-                        f"Matchup {matchup} counts: home: {matchup_count_home} counter: {matchup_count}"
-                    )
-                matchups_list.append(f"{matchup} plays {matchup_count} times")
-            matchups_list = list(set(matchups_list))
+            team_matchup_count_dicts = {}
+            for team in self.teams:
+                team_dict = self._return_correct_team_dict(team=team)
+                team_matchup_count_dicts[team] = team_dict
             self.logger.info("Creating validation doc")
             with open("validate_schedule.txt", "w") as f:
-                for listed_matchup in sorted(matchups_list):
-                    f.write("%s\n" % (listed_matchup))
+                for key in team_matchup_count_dicts:
+                    f.write("%s\n" % (f"{key}: {team_matchup_count_dicts[key]}"))
             self.logger.info("Validation doc created successfully!")
         except Exception as e:
             self.logger.error(e)
@@ -467,7 +455,7 @@ class ScheduleGenerator:
 
     def _output_team_schedules(self):
         """
-        Helper method to output team schedules
+        Helper method to output team schedules as opposed to weekly schedules
 
         Args:
             None
