@@ -252,6 +252,7 @@ class ScheduleGenerator:
         self.logger.warning(f"Starting schedule generation for week {week}")
         week_matchups = []
         available_teams = self.teams.copy()
+        # run the rivalry week method instead of generating a random schedule
         if week == 5:
             rivalry_week = self._rivalry_week(week)
             return rivalry_week
@@ -262,9 +263,9 @@ class ScheduleGenerator:
             if team not in available_teams:
                 continue
             while not matchup_works:
-                # loop check and week schedule check
+                # prevents infinite loops when two incompatible teams remain
                 infinite_loop_check += 1
-                # choose opponent and create/validate the matchup
+                # choose opponent at random and create/validate the matchup
                 opponent = random.choice(available_teams)
                 matchup = (team, opponent)
                 self.logger.info(f"Testing matchup {matchup}")
@@ -275,13 +276,16 @@ class ScheduleGenerator:
                 if infinite_loop_check > 10000:
                     return False
             # adds matchup (if accepted) to week matchups and all matchups
-            # removes teams in a matchup from available list
             week_matchups.append((team, opponent))
+            # removes teams in a matchup from available list
             available_teams.remove(team)
             available_teams.remove(opponent)
+        # checks that all teams are included in the matchups
         if len(week_matchups) == 5:
             self.logger.info("Week schedule accepted")
+            # adds week schedule to the season schedule
             self.schedule[f"Week {str(week)}"] = week_matchups
+            # updates matchup counts for every team
             for matchup in week_matchups:
                 home = matchup[0]
                 away = matchup[1]
@@ -307,46 +311,54 @@ class ScheduleGenerator:
             bool: Returns a boolean on if the matchup should be accepted, True if yes otherwise False
         """
         self.logger.info("Validating the matchup")
-        # set number of times a team should play another to 1 until week 10 to ensure each team plays
-        # each other team to start the season
-        max_games_against_opponent = 1 if week <= 9 else 2
+        try:
+            # set number of times a team should play another to 1 until week 10 to ensure each team plays
+            # each other team to start the season
+            max_games_against_opponent = 1 if week <= 9 else 2
 
-        home = matchup[0]
-        away = matchup[1]
+            # name the two teams involved in the matchup
+            home = matchup[0]
+            away = matchup[1]
 
-        if matchup in self.previous_week:
-            self.logger.info("Matchup failed because matchup occurred the previous week")
-            return False
+            # check that the matchup did not occur the previous week
+            if matchup in self.previous_week:
+                self.logger.info("Matchup failed because matchup occurred the previous week")
+                return False
 
-        # confirm team isn't playing itself or its rival before rivalry week
-        if home != away:
-            home_dict = self._return_correct_team_dict(team=home)
-            away_dict = self._return_correct_team_dict(team=away)
-            if week < 5:
-                if self.rivals[home] == away:
-                    self.logger.info("Matchup failed because rivals played before week 5")
-                    return False
-                elif self.rivals[away] == home:
-                    self.logger.info("Matchup failed because rivals played before week 5")
-                    return False
-            matchup_total_home_away = home_dict[away]
-            matchup_total_away_home = away_dict[home]
-            if matchup_total_away_home == matchup_total_home_away:
-                if matchup_total_away_home < max_games_against_opponent:
-                    self.logger.info("Matchup validation successful")
-                    return True
+            # check that team isn't playing itself
+            if home != away:
+                home_dict = self._return_correct_team_dict(team=home)
+                away_dict = self._return_correct_team_dict(team=away)
+                # check that a team doesn't face its rival before rivalry week
+                if week < 5:
+                    if self.rivals[home] == away:
+                        self.logger.info("Matchup failed because rivals played before week 5")
+                        return False
+                    elif self.rivals[away] == home:
+                        self.logger.info("Matchup failed because rivals played before week 5")
+                        return False
+                # check the number of matchups these teams have had against one another
+                matchup_total_home_away = home_dict[away]
+                matchup_total_away_home = away_dict[home]
+                if matchup_total_away_home == matchup_total_home_away:
+                    if matchup_total_away_home < max_games_against_opponent:
+                        self.logger.info("Matchup validation successful")
+                        return True
+                    else:
+                        self.logger.info("Matchup failed because teams play each other more than twice")
+                        return False
+                    self.logger.info(f"Matchup {matchup} has count: {matchup_total_away_home}")
                 else:
-                    self.logger.info("Matchup failed because teams play each other more than twice")
-                    return False
-                self.logger.info(f"Matchup {matchup} has count: {matchup_total_away_home}")
+                    self.logger.error(
+                        f"{home}/{away} count: {home}: {matchup_total_home_away}, {away}: {matchup_total_away_home}"
+                    )
+                    raise AssertionError("Home team dict and away team dict do not match.")
             else:
-                self.logger.error(
-                    f"{home}/{away} matchup count: {home}: {matchup_total_home_away}, {away}: {matchup_total_away_home}"
-                )
-                raise AssertionError("Home team dict and away team dict do not match.")
-        else:
-            self.logger.info("Matchup failed because team is playing itself")
-            return False
+                self.logger.info("Matchup failed because team is playing itself")
+                return False
+        except Exception as e:
+            self.logger.error(e)
+            raise e
 
     def _rivalry_week(self, week: int):
         """
@@ -370,9 +382,11 @@ class ScheduleGenerator:
                 rival_matchup = (key, rivals[key])
                 week_matchups.append(rival_matchup)
             for matchup in list(set(week_matchups)):
+                # add matchups to the matchup list and update total number of matchups played
                 self.all_matchups.append(matchup)
                 self._update_correct_team_dict(home=matchup[0], away=matchup[1])
                 self._update_correct_team_dict(home=matchup[1], away=matchup[0])
+            # add matchups to the schedule
             self.schedule[f"Rivalry Week {str(week)}"] = week_matchups
             self.logger.info("Rivalry week matchups created successfully!")
             return True
@@ -392,6 +406,7 @@ class ScheduleGenerator:
             output_dict = self.schedule.copy()
             for key in output_dict:
                 string_of_week = " "
+                # create weekly string of matchups
                 for matchup in output_dict[key]:
                     string_of_matchup = str(matchup[0]) + " versus " + str(matchup[1])
                     string_of_week = string_of_week + string_of_matchup + ", "
@@ -410,6 +425,7 @@ class ScheduleGenerator:
         schedule = self._format_output()
         self.logger.info("Outputting schedule")
         try:
+            # writes the schedule line by line to a file
             with open("schedule.txt", "w") as f:
                 for key, value in schedule.items():
                     f.write("%s:%s\n\n" % (key, value))
@@ -457,53 +473,50 @@ class ScheduleGenerator:
             None
         """
         self.logger.info("Creating team schedules")
-        team_schedule = {}
-        with open("schedule.txt", "r") as file:
-            lines = file.readlines()
-
-            week = 0
-            matchups = []
-
-            for line in lines:
-                line = line.strip()
-
-                if line.startswith("Week"):
-                    week = int(line.split(":")[0].split()[1])
-                    matchups = line.split(":")[1].strip().split(",")
-
-                elif line.startswith("Rivalry Week"):
-                    week = "Rivalry"
-                    matchups = line.split(":")[1].strip().split(",")
-
-                for matchup in matchups:
-                    teams = matchup.split("versus")
-                    team1 = teams[0].strip()
-                    team2 = teams[1].strip()
-
-                    if team1 not in team_schedule:
-                        team_schedule[team1] = []
-                    if team2 not in team_schedule:
-                        team_schedule[team2] = []
-
-                    team_schedule[team1].append((week, team2))
-                    team_schedule[team2].append((week, team1))
-
-                # clear matchup list to prevent duplication
+        try:
+            team_schedule = {}
+            with open("schedule.txt", "r") as file:
+                lines = file.readlines()
+                week = 0
                 matchups = []
-
-        self.logger.info("Outputting team schedules to file")
-        # output team schedules into a file
-        with open("team_schedules.txt", "w") as f:
-            for team, schedule in team_schedule.items():
-                f.write(f"Schedule for {team}:\n")
-                for matchup in schedule:
-                    week, opponent = matchup
-                    if week == "Rivalry":
-                        weekly_match = f"Rivalry Week: versus {opponent}"
-                    else:
-                        weekly_match = f"Week {week}: versus {opponent}"
-                    f.write(f"{weekly_match}\n")
-                f.write("\n")
+                for line in lines:
+                    line = line.strip()
+                    # determine week number and matchup
+                    if line.startswith("Week"):
+                        week = int(line.split(":")[0].split()[1])
+                        matchups = line.split(":")[1].strip().split(",")
+                    elif line.startswith("Rivalry Week"):
+                        week = "Rivalry"
+                        matchups = line.split(":")[1].strip().split(",")
+                    # create team specific schedules
+                    for matchup in matchups:
+                        teams = matchup.split("versus")
+                        team1 = teams[0].strip()
+                        team2 = teams[1].strip()
+                        if team1 not in team_schedule:
+                            team_schedule[team1] = []
+                        if team2 not in team_schedule:
+                            team_schedule[team2] = []
+                        team_schedule[team1].append((week, team2))
+                        team_schedule[team2].append((week, team1))
+                    # clear matchup list to prevent duplication
+                    matchups = []
+            self.logger.info("Outputting team schedules to file")
+            # output team schedules into a file
+            with open("team_schedules.txt", "w") as f:
+                for team, schedule in team_schedule.items():
+                    f.write(f"Schedule for {team}:\n")
+                    for matchup in schedule:
+                        week, opponent = matchup
+                        if week == "Rivalry":
+                            weekly_match = f"Rivalry Week: versus {opponent}"
+                        else:
+                            weekly_match = f"Week {week}: versus {opponent}"
+                        f.write(f"{weekly_match}\n")
+                    f.write("\n")
+        except Exception as e:
+            self.logger.error(e)
+            raise e
 
     def _move_files_to_schedule_folder(self):
         """
@@ -513,43 +526,49 @@ class ScheduleGenerator:
             None
         """
         self.logger.info("Moving created txt files into schedule folder.")
-        # Create the "schedule" folder if it doesn't exist
-        if not os.path.exists("schedule"):
-            os.makedirs("schedule")
-
-        # List of files to be moved
-        files_to_move = ["schedule.txt", "team_schedules.txt", "validate_schedule.txt"]
-
-        # Move each file to the "schedule" folder
-        for file_name in files_to_move:
-            source_path = file_name
-            destination_path = os.path.join("schedule", file_name)
-            shutil.move(source_path, destination_path)
-        self.logger.info("Files moved successfully to the 'schedule' folder.")
+        try:
+            # Create the "schedule" folder if it doesn't exist
+            if not os.path.exists("schedule"):
+                os.makedirs("schedule")
+            # List of files to be moved
+            files_to_move = ["schedule.txt", "team_schedules.txt", "validate_schedule.txt"]
+            # Move each file to the "schedule" folder
+            for file_name in files_to_move:
+                source_path = file_name
+                destination_path = os.path.join("schedule", file_name)
+                shutil.move(source_path, destination_path)
+            self.logger.info("Files moved successfully to the 'schedule' folder.")
+        except Exception as e:
+            self.logger.error(e)
+            raise e
 
     def controller(self):
         """
         Controller method to run the class
         """
         self.logger.info("Controller beginning schedule generation.")
-        current_week = 1
-        count_attempts = 1
-        # generate schedule iterating by week
-        while current_week < 16:
-            count_attempts += 1
-            indicator = self.generate_weekly_schedule(current_week)
-            # only incremement the week if the schedule was accepted to ensure each week gets a schedule
-            if indicator:
-                count_attempts = 1
-                current_week += 1
-            if count_attempts > 15:
-                return False
-        # write the schedule to a txt file
-        self._validate_output()
-        self._output_schedule()
-        self._output_team_schedules()
-        self._move_files_to_schedule_folder()
-        return True
+        try:
+            current_week = 1
+            count_attempts = 1
+            # generate schedule iterating by week
+            while current_week < 16:
+                count_attempts += 1
+                indicator = self.generate_weekly_schedule(current_week)
+                # only incremement the week if the schedule was accepted to ensure each week gets a schedule
+                if indicator:
+                    count_attempts = 1
+                    current_week += 1
+                if count_attempts > 15:
+                    return False
+            # write the schedule, team schedules, and validation to a txt file in a schedule folder
+            self._validate_output()
+            self._output_schedule()
+            self._output_team_schedules()
+            self._move_files_to_schedule_folder()
+            return True
+        except Exception as e:
+            self.logger.error(e)
+            raise e
 
 
 if __name__ == "__main__":
