@@ -23,9 +23,6 @@ class Scorer:
         print("Scoring quarterback")
         points = 0
         pyards = input("Passing Yards: ")
-        if str.lower(rush_yards) == "scored":
-            points = int(input("Points: "))
-            return points
         points += math.floor(int(pyards) / 25)
         rush_yards = int(input("Rushing Yards: "))
         points += math.floor(rush_yards / 10)
@@ -34,7 +31,7 @@ class Scorer:
         points -= turnovers
         if turnovers > 0:
             pick_fumble_six = int(input("Total turnovers returned for TDs: "))
-            points -= 3 * pick_fumble_six
+            points -= 4 * pick_fumble_six
         go_further = str(input("Did your QB score another way? y/n: "))
         if go_further == "y":
             two_pt = int(input("Total two point conversions: "))
@@ -66,7 +63,7 @@ class Scorer:
         points -= turnovers
         if turnovers > 0:
             pick_fumble_six = int(input("Total turnovers returned for TDs: "))
-            points -= 3 * pick_fumble_six
+            points -= 4 * pick_fumble_six
         go_further = str.lower(input("Did your RB score another way? y/n: "))
         if go_further == "y":
             pyards = int(input("Passing Yards: "))
@@ -102,7 +99,7 @@ class Scorer:
         points -= turnovers
         if turnovers > 0:
             pick_fumble_six = int(input("Total turnovers returned for TDs: "))
-            points -= 3 * pick_fumble_six
+            points -= 4 * pick_fumble_six
         go_further = str.lower(input(f"Did your {str.upper(player_type)} score another way? y/n: "))
         if go_further == "y":
             rush_yards = int(input("Rushing Yards: "))
@@ -133,24 +130,26 @@ class Scorer:
             return points
         else:
             points += int(first)
-        points -= int(input("PATs attempted: "))
+        points -= 2 * int(input("PATs missed: "))
         points += int(input("FGs 1-29 yards: "))
         points += 2 * int(input("FGs 30-49 yards: "))
         points += 3 * int(input("FGs 40-49 yards: "))
-        points += 4 * int(input("FGs 50+ yards: "))
-        points -= 2 * int(input("Field Goals missed: "))
+        points += 4 * int(input("FGs 50-59 yards: "))
+        points += 5 * int(input("FGs 60-69 yards: "))
+        points += 6 * int(input("FGs 70+ yards: "))
+        points -= 1 * int(input("Field Goals missed: "))
         print(f"K Score: {points}")
         print()
         return points
 
     def _defense(self) -> int:
         """
-        Helper method to score a defense
+        Helper method to score a defense/special teams
 
         Returns:
-            int: DEF's total points for the week
+            int: D/ST's total points for the week
         """
-        print("Scoring defense")
+        print("Scoring D/ST")
         points = 0
         points_allowed = input("Points Allowed: ")
         if str.lower(points_allowed) == "scored":
@@ -178,7 +177,7 @@ class Scorer:
         points += 2 * int(input("Blocked punt or FGs: "))
         points += int(input("Blocked PATs: "))
         points += 4 * int(input("Defensive TDs: "))
-        print(f"DEF Score: {points}")
+        print(f"D/ST Score: {points}")
         print()
         return points
 
