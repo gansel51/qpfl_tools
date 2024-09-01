@@ -26,8 +26,8 @@ class ScheduleGenerator:
             "Connor",
             "Stephen",
             "Tim/Spencer",
-            "Joe Kuhl",
-            "Joe Ward",
+            "Joe/Joe",
+            "Anagh",
             "Bill",
             "Arnav",
         ]
@@ -36,12 +36,12 @@ class ScheduleGenerator:
             "Ryan": "Griffin",
             "Connor": "Kaminska",
             "Kaminska": "Connor",
-            "Bill": "Joe Kuhl",
-            "Joe Kuhl": "Bill",
-            "Arnav": "Stephen",
-            "Stephen": "Arnav",
-            "Tim/Spencer": "Joe Ward",
-            "Joe Ward": "Tim/Spencer",
+            "Bill": "Joe/Joe",
+            "Joe/Joe": "Bill",
+            "Arnav": "Anagh",
+            "Anagh": "Arnav",
+            "Tim/Spencer": "Stephen",
+            "Stephen": "Tim/Spencer",
         }
         self.schedule = {}
         self.previous_week = []
@@ -53,8 +53,8 @@ class ScheduleGenerator:
             "Connor": 0,
             "Stephen": 0,
             "Tim/Spencer": 0,
-            "Joe Kuhl": 0,
-            "Joe Ward": 0,
+            "Joe/Joe": 0,
+            "Anagh": 0,
             "Bill": 0,
             "Arnav": 0,
         }
@@ -65,8 +65,8 @@ class ScheduleGenerator:
             "Connor": 0,
             "Stephen": 0,
             "Tim/Spencer": 0,
-            "Joe Kuhl": 0,
-            "Joe Ward": 0,
+            "Joe/Joe": 0,
+            "Anagh": 0,
             "Bill": 0,
             "Arnav": 0,
         }
@@ -77,8 +77,8 @@ class ScheduleGenerator:
             "Connor": 0,
             "Stephen": 0,
             "Tim/Spencer": 0,
-            "Joe Kuhl": 0,
-            "Joe Ward": 0,
+            "Joe/Joe": 0,
+            "Anagh": 0,
             "Bill": 0,
             "Arnav": 0,
         }
@@ -89,8 +89,8 @@ class ScheduleGenerator:
             "Connor": 0,
             "Stephen": 0,
             "Tim/Spencer": 0,
-            "Joe Kuhl": 0,
-            "Joe Ward": 0,
+            "Joe/Joe": 0,
+            "Anagh": 0,
             "Bill": 0,
             "Arnav": 0,
         }
@@ -101,8 +101,8 @@ class ScheduleGenerator:
             "Connor": 0,
             "Stephen": 0,
             "Tim/Spencer": 0,
-            "Joe Kuhl": 0,
-            "Joe Ward": 0,
+            "Joe/Joe": 0,
+            "Anagh": 0,
             "Bill": 0,
             "Arnav": 0,
         }
@@ -113,8 +113,8 @@ class ScheduleGenerator:
             "Connor": 0,
             "Stephen": 0,
             "Tim/Spencer": 0,
-            "Joe Kuhl": 0,
-            "Joe Ward": 0,
+            "Joe/Joe": 0,
+            "Anagh": 0,
             "Bill": 0,
             "Arnav": 0,
         }
@@ -125,20 +125,20 @@ class ScheduleGenerator:
             "Connor": 0,
             "Stephen": 0,
             "Tim/Spencer": 0,
-            "Joe Kuhl": 0,
-            "Joe Ward": 0,
+            "Joe/Joe": 0,
+            "Anagh": 0,
             "Bill": 0,
             "Arnav": 0,
         }
-        self.joew = {
+        self.anagh = {
             "Griffin": 0,
             "Ryan": 0,
             "Kaminska": 0,
             "Connor": 0,
             "Stephen": 0,
             "Tim/Spencer": 0,
-            "Joe Kuhl": 0,
-            "Joe Ward": 0,
+            "Joe/Joe": 0,
+            "Anagh": 0,
             "Bill": 0,
             "Arnav": 0,
         }
@@ -149,8 +149,8 @@ class ScheduleGenerator:
             "Connor": 0,
             "Stephen": 0,
             "Tim/Spencer": 0,
-            "Joe Kuhl": 0,
-            "Joe Ward": 0,
+            "Joe/Joe": 0,
+            "Anagh": 0,
             "Bill": 0,
             "Arnav": 0,
         }
@@ -161,8 +161,8 @@ class ScheduleGenerator:
             "Connor": 0,
             "Stephen": 0,
             "Tim/Spencer": 0,
-            "Joe Kuhl": 0,
-            "Joe Ward": 0,
+            "Joe/Joe": 0,
+            "Anagh": 0,
             "Bill": 0,
             "Arnav": 0,
         }
@@ -191,10 +191,10 @@ class ScheduleGenerator:
                 return self.stephen
             elif team == "Tim/Spencer":
                 return self.tim_spencer
-            elif team == "Joe Kuhl":
+            elif team == "Joe/Joe":
                 return self.joek
-            elif team == "Joe Ward":
-                return self.joew
+            elif team == "Anagh":
+                return self.anagh
             elif team == "Bill":
                 return self.bill
             elif team == "Arnav":
@@ -225,10 +225,10 @@ class ScheduleGenerator:
                 self.stephen[away] += 1
             elif home == "Tim/Spencer":
                 self.tim_spencer[away] += 1
-            elif home == "Joe Kuhl":
+            elif home == "Joe/Joe":
                 self.joek[away] += 1
-            elif home == "Joe Ward":
-                self.joew[away] += 1
+            elif home == "Anagh":
+                self.anagh[away] += 1
             elif home == "Bill":
                 self.bill[away] += 1
             elif home == "Arnav":
@@ -371,9 +371,9 @@ class ScheduleGenerator:
             rivals = {
                 "Griffin": "Ryan",
                 "Connor": "Kaminska",
-                "Bill": "Joe Kuhl",
-                "Arnav": "Stephen",
-                "Tim/Spencer": "Joe Ward",
+                "Bill": "Joe/Joe",
+                "Arnav": "Anagh",
+                "Tim/Spencer": "Stephen",
             }
             for key in rivals:
                 # create rival matchup
